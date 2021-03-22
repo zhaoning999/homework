@@ -2,6 +2,7 @@ import csv
 
 from LegacySite.models import Product, User
 
+
 def import_products(fname):
     for row in csv.reader(open(fname)):
         prod = Product.objects.create(
@@ -13,6 +14,7 @@ def import_products(fname):
         )
         prod.save()
 
+
 def import_users(fname):
     for row in csv.reader(open(fname)):
         user = User.objects.create(
@@ -20,6 +22,7 @@ def import_users(fname):
             password=row[3],
         )
         user.save()
+
 
 import_users('users.csv')
 import_products('products.csv')

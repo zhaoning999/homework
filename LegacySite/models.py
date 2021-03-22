@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.backends import BaseBackend
 from . import extras
-from django-cryptography.fields import encrypt
+from django_cryptography.fields import encrypt
 # Create your models here.
 class User(AbstractBaseUser):
     username = models.CharField(max_length=30, unique=True)

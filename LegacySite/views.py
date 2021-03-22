@@ -63,7 +63,7 @@ def logout_view(request):
 
 def buy_card_view(request, prod_num=0):
     if request.method == 'GET':
-        context = {"prod_num" : prod_num}
+        context = {"prod_num": prod_num}
         director = request.GET.get('director', None)
         if director is not None:
             # KG: Wait, what is this used for? Need to check the template.
@@ -111,7 +111,7 @@ def buy_card_view(request, prod_num=0):
 
 # KG: What stops an attacker from making me buy a card for him?
 def gift_card_view(request, prod_num=0):
-    context = {"prod_num" : prod_num}
+    context = {"prod_num": prod_num}
     if request.method == "GET":
         context['user'] = None
         director = request.GET.get('director', None)
@@ -138,7 +138,7 @@ def gift_card_view(request, prod_num=0):
         user = request.POST.get('username', None)
         if user is None:
             return HttpResponse("ERROR 404")
-        if not user.is_authenticated:
+        if (user != request.user.username):
             return HttpResponse("Don't gift a card on other's behalf")
         try:
             user_account = User.objects.get(username=user)
@@ -164,7 +164,7 @@ def gift_card_view(request, prod_num=0):
         return render(request, f"gift.html", context)
 
 def use_card_view(request):
-    context = {'card_found':None}
+    context = {'card_found': None}
     if request.method == 'GET':
         if not request.user.is_authenticated:
             return redirect("login.html")
@@ -192,15 +192,14 @@ def use_card_view(request):
         print(card_data.strip())
         signature = json.loads(card_data)['records'][0]['signature']
         # signatures should be pretty unique, right?
-        if ';' in signature:
-            return HttpResponse("Error 404: Internal Server Error")
-        card_query = Card.objects.raw('select id from LegacySite_card where data = \'%s\'' % signature)
+        # sql = 'select id from LegacySite_card where data = \'%s\'' % signature
+        card_query = Card.objects.filter(data=bytes(signature, encoding='utf-8'));
         user_cards = Card.objects.raw('select id, count(*) as count from LegacySite_card where LegacySite_card.user_id = %s' % str(request.user.id))
         card_query_string = ""
         for thing in card_query:
             # print cards as strings
             card_query_string += str(thing) + '\n'
-        if len(card_query) is 0:
+        if len(card_query) == 0:
             # card not known, add it.
             if card_fname is not None:
                 card_file_path = f'/tmp/{card_fname}_{request.user.id}_{user_cards[0].count + 1}.gftcrd'
